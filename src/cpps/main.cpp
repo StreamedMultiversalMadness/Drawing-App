@@ -29,6 +29,7 @@ class Pensel
 
         void AddPoint(Vector2 point)
         {
+            if(point == Vector2Zero())return;
             Vector2 offset = screenInfo->mouseOffset->offset;
 
             if(lastAddedIndex == arraySize-1)
@@ -49,21 +50,20 @@ class Pensel
 
             for(int i = 1; i < arraySize; i++)
             {
-                Vector2 from = points[i-1] - offset;
-                Vector2 to = points[i] - offset;
-                // if(from == Vector2Zero() || to == Vector2Zero())continue;
-                DrawLineEx(from, to, 2.0f, WHITE);
+
+                Vector2 from = points[i-1] ;
+                Vector2 to = points[i];
+                if(from == Vector2Zero() || to == Vector2Zero())continue;
+                DrawLineEx(from - offset, to - offset, 2.0f, WHITE);
             }
         
         }
 
-        void StopDrawing()
+        void CreateBreak()
         {
-            Vector2 offset = screenInfo->mouseOffset->offset;
-
             if(lastAddedIndex == arraySize-1)
             {
-                lastAddedIndex = 0;
+                lastAddedIndex = 0; // Reset of you've drawn too much, This will change to add more slots instead
             }
 
             points[lastAddedIndex] = Vector2Zero();
@@ -121,7 +121,7 @@ void ButtonReleaseEvents(AppContext* context)
 {
     if(IsMouseButtonReleased(MOUSE_BUTTON_LEFT))
     {
-        // context->pensel->StopDrawing();
+        context->pensel->CreateBreak();
     }    
 }
 
