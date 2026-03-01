@@ -49,7 +49,7 @@ class Pensel
 
             for(int i = 1; i < arraySize; i++)
             {
-                Vector2 from = points[i-1] + offset;
+                Vector2 from = points[i-1] - offset;
                 Vector2 to = points[i] - offset;
                 // if(from == Vector2Zero() || to == Vector2Zero())continue;
                 DrawLineEx(from, to, 2.0f, WHITE);
@@ -101,7 +101,7 @@ void ButtonPressedEvents(AppContext* context) // When a button is pressed these 
 {
     if(IsMouseButtonPressed(MOUSE_BUTTON_MIDDLE))
     {
-        context->screenInfo->mouseOffset->referencePoint = GetMousePosition();
+        context->screenInfo->mouseOffset->referencePoint = GetMousePosition() + context->screenInfo->mouseOffset->offset;
     }
 }
 
@@ -113,7 +113,7 @@ void ButtonHoldEvents(AppContext* context) // These functions inside fire as lon
     }
     else if(IsMouseButtonDown(MOUSE_BUTTON_MIDDLE))
     {
-        context->screenInfo->mouseOffset->offset = context->screenInfo->mouseOffset->referencePoint - GetMousePosition();
+        context->screenInfo->mouseOffset->offset = context->screenInfo->mouseOffset->referencePoint - GetMousePosition() ; // Relative to the point you recently pressed middle mouse
     }
 }
 
