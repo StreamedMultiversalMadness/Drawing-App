@@ -6,17 +6,49 @@
 struct MouseOffset
 {
     Vector2 referencePoint;
-    Vector2 offset;
+    Vector2 value;
 };
 
-struct ScreenInfo
+struct Zoom
 {
-    Vector2 size;
-    Vector2 center;
-    Vector2 centeroffset;
-    float ratio;
-    Color color;
-    MouseOffset* mouseOffset;
+    float min = 1.0f;
+    float max = 2.0f;
+    float value = 1.0f;
+};
+
+class ScreenInfo
+{
+    private:
+        Color color;
+
+    public:
+        Vector2 size;
+        Vector2 center;
+        Vector2 centeroffset;
+        float ratio;
+        
+        Zoom zoom;
+        MouseOffset mouseOffset;
+
+        ScreenInfo()
+        {
+            float x = GetScreenWidth();
+            float y = GetScreenHeight();
+            MouseOffset mOffset;
+            Zoom zm;
+
+            size = Vector2{x, y};
+            center = Vector2{x/2, y/2};
+            ratio = x / y;
+
+            zoom = zm;
+            mouseOffset = mOffset;
+        }
+
+        void SetBackgroundColor(Color c)
+        {
+            color = c;
+        }
 };
 
 class Pensel
@@ -29,15 +61,18 @@ class Pensel
 
         void AddPoint(Vector2 point)
         {
+            // Point is usually Mouse Position
             if(point == Vector2Zero())return;
-            Vector2 offset = screenInfo->mouseOffset->offset;
+            
+            Vector2 offset = screenInfo->mouseOffset.value;
 
             if(lastAddedIndex == arraySize-1)
             {
                 lastAddedIndex = 0;
             }
 
-            points[lastAddedIndex] = point + offset;;
+            point = point / screenInfo->zoom.value; // Zoom scaling
+            points[lastAddedIndex] = (point + offset);
 
             lastAddedIndex++;
         }
@@ -46,15 +81,17 @@ class Pensel
 
         void DrawPoints()
         {
-            Vector2 offset = screenInfo->mouseOffset->offset;
+            Vector2 offset = screenInfo->mouseOffset.value;
 
             for(int i = 1; i < arraySize; i++)
             {
 
-                Vector2 from = points[i-1] ;
+                Vector2 from = points[i-1];
                 Vector2 to = points[i];
                 if(from == Vector2Zero() || to == Vector2Zero())continue;
-                DrawLineEx(from - offset, to - offset, 2.0f, WHITE);
+                from = (from - offset) * screenInfo->zoom.value;
+                to = (to - offset) * screenInfo->zoom.value;
+                DrawLineEx(from, to, 2.0f, WHITE);
             }
         
         }
@@ -78,20 +115,6 @@ struct AppContext
     ScreenInfo* screenInfo;
 };
 
-ScreenInfo GetScreenInfo(Color screenColor)
-{
-    float x = GetScreenWidth();
-    float y = GetScreenHeight();
-
-    ScreenInfo info;
-    info.size = Vector2{x, y};
-    info.center = Vector2{x/2, y/2};
-    info.ratio = x / y;
-    info.color = screenColor;
-
-    return info;
-}
-
 float GetHypotenuse(float x, float y)
 {
     return sqrt(x*x + y*y);
@@ -101,7 +124,21 @@ void ButtonPressedEvents(AppContext* context) // When a button is pressed these 
 {
     if(IsMouseButtonPressed(MOUSE_BUTTON_MIDDLE))
     {
-        context->screenInfo->mouseOffset->referencePoint = GetMousePosition() + context->screenInfo->mouseOffset->offset;
+        
+        MouseOffset mOffset = context->screenInfo->mouseOffset;
+        context->screenInfo->mouseOffset.referencePoint = GetMousePosition() + mOffset.value; // This is the problem, I don't know what's wrong
+    }
+    if(IsKeyPressed(KEY_I))
+    {
+        Zoom zoom = context->screenInfo->zoom;
+        context->screenInfo->zoom.value += 0.2f;
+        context->screenInfo->zoom.value = Clamp(context->screenInfo->zoom.value, context->screenInfo->zoom.min, context->screenInfo->zoom.max);
+    }
+    else if (IsKeyPressed(KEY_O))
+    {
+        Zoom zoom = context->screenInfo->zoom;
+        context->screenInfo->zoom.value -= 0.2f;
+        context->screenInfo->zoom.value = Clamp(context->screenInfo->zoom.value, context->screenInfo->zoom.min, context->screenInfo->zoom.max);
     }
 }
 
@@ -113,7 +150,7 @@ void ButtonHoldEvents(AppContext* context) // These functions inside fire as lon
     }
     else if(IsMouseButtonDown(MOUSE_BUTTON_MIDDLE))
     {
-        context->screenInfo->mouseOffset->offset = context->screenInfo->mouseOffset->referencePoint - GetMousePosition() ; // Relative to the point you recently pressed middle mouse
+        context->screenInfo->mouseOffset.value = context->screenInfo->mouseOffset.referencePoint - GetMousePosition() ; // Relative to the point you recently pressed middle mouse
     }
 }
 
@@ -143,14 +180,17 @@ int main()
     Color screenColor = Color{18, 18, 18, 255};
 
     
-    ScreenInfo screenInfo = GetScreenInfo(screenColor);
-    MouseOffset mouseOffest = {};
-    screenInfo.mouseOffset = &mouseOffest;
+    ScreenInfo screenInfo;
+    screenInfo.zoom.max = 4.0f;
+
     // scrre->offset = Vector2Zero();
-    // screenInfo.mouseOffset->referencePoint = Vector2{0,0};
+    // screenInfo->mouseOffset.referencePoint = Vector2{0,0};
+
+    
 
     Pensel pensel;
     pensel.screenInfo = &screenInfo;
+
     AppContext context = {0};
     context.pensel = &pensel;
     context.screenInfo = &screenInfo;
@@ -161,8 +201,8 @@ int main()
         BeginDrawing();
 
             HandleInput(&context);
-
-            ClearBackground(screenInfo.color);
+            
+            ClearBackground(screenColor);
 
             pensel.DrawPoints();
             
