@@ -1,8 +1,15 @@
 #include<GUI.hpp>
 #include<iostream>
+#include <string>
 
 
 std::list<UIElement*> elementList; // A list that holds all the elements
+
+void UIElement::SetBackgroundColor(Color bgColor)
+{
+    this->baseColor = bgColor;
+    this->backgroundColor = bgColor; // [BUG?] This might cause some bugs
+}
 
 void UIElement::UpdateScreenCoordinates(int screenSizeX, int screenSizeY)
 {
@@ -37,12 +44,11 @@ Coordinates* UIElement::GetCoordinates()
 }
 
 
-UIElement::UIElement(UIElementType type, UIElementShape shape, Color color, Vector2 position, Vector2 size)
+UIElement::UIElement(unsigned int properties, Color color, Vector2 position, Vector2 size)
 {
-    this->type = type;
-    this->shape = shape;
+    this->properties = properties;
     this->baseColor = color;
-    this->color = color;
+    this->backgroundColor = color;
     this->focusColor = Color{color.r, color.g, color.b, 50};
     this->SetUnitPosition(position);
     this->SetUnitSize(size);
@@ -56,32 +62,38 @@ UIElement::UIElement(UIElementType type, UIElementShape shape, Color color, Vect
 void UIElement::Focus()
 {
     this->isFocus = true;
-    this->color = this->focusColor;
+    this->backgroundColor = this->focusColor;
 }
 
 void UIElement::UnFocus()
 {
     this->isFocus = true;
-    this->color = this->baseColor;
+    this->backgroundColor = this->baseColor;
 }
 
 void UIElement::Render()
 {
-    switch (this->shape)
+    if(!this->visible)return;
+    unsigned int properties = this->properties;
+    bool noBackground = properties & UIElementProperties::NoBackground;
+    bool text = properties & UIElementProperties::Text;
+
+    Coordinates* coords = this->GetCoordinates();
+    Vector2 pos = coords->screen.position;
+    Vector2 size = coords->screen.size;
+   
+    if(!noBackground)
     {
-    case UIElementShape::Circle:
-        /* code */
-        break;
-    
-    default:
         // Square
-        Coordinates* coords = this->GetCoordinates();
-        Vector2 pos = coords->screen.position;
-        Vector2 size = coords->screen.size;
-        
-        DrawRectangle(pos.x, pos.y, size.x, size.y, this->color);
-        break;
+        DrawRectangle(pos.x, pos.y, size.x, size.y, this->backgroundColor);
     }
+    if(text)
+    {
+        // Text
+        DrawText(this->text.c_str(), pos.x, pos.y, size.y, this->textColor);
+    }
+        
+     
     
 }
 
@@ -106,19 +118,12 @@ void Hover(UIElement* e, Vector2 cursorPos)
 
     bool hover = false;
 
-    switch (e->shape)
-    {
-    case UIElementShape::Circle:
-        
-        break;
     
-    default:
-        // Square
-        bool xVacinity = cursor_x < endX && cursor_x > posX;
-        bool yVacinity = cursor_y < endY && cursor_y > posY;
-        if(xVacinity && yVacinity) hover = true; // Cursor is inside
-        break;
-    }
+    // Square
+    bool xVacinity = cursor_x < endX && cursor_x > posX;
+    bool yVacinity = cursor_y < endY && cursor_y > posY;
+    if(xVacinity && yVacinity) hover = true; // Cursor is inside
+      
 
     
     if(hover)

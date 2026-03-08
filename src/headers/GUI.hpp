@@ -1,19 +1,14 @@
 #pragma once
 #include <raylib.h>
 #include <list>
+#include <string>
 
 
-enum UIElementType
+enum UIElementProperties // These are used as Flags
 {
-    Button,
-    Text, 
-    ImageType,
-};
-
-enum UIElementShape
-{
-    Square,
-    Circle, 
+    NoBackground = 1,
+    Text = 2, 
+    Picture = 4,
 };
 
 struct Scales
@@ -39,13 +34,15 @@ class UIElement
         
         
         
-        UIElementType type;
-        UIElementShape shape;
-        Color baseColor;
-        Color color;
-        Color focusColor;
+        unsigned int properties; // Uses UIElementProperties
+        
 
-        UIElement(UIElementType type, UIElementShape shape, Color color, Vector2 position, Vector2 size);
+        std::string text;
+        Color textColor;
+
+        bool visible = true;
+
+        UIElement(unsigned int properties, Color color, Vector2 position, Vector2 size);
         // ~UIElement(); // Will be presnent if I implement runtime instantiations
 
         void Push(); // When you press the ui
@@ -53,13 +50,19 @@ class UIElement
         void UnFocus(); // When the mouse leaves the area of the ui
         void Render(); // Renders the UI (for the frame you call it on)
         void IsFocus(); 
+
         Coordinates* GetCoordinates();
         Vector2 GetElementScreenSize();
+        void SetBackgroundColor(Color bgColor);
         void UpdateScreenCoordinates(int screenSizeX, int screenSizeY);
         void SetUnitPosition(Vector2 pos);
         void SetUnitSize(Vector2 size);
 
     private:
         bool isFocus;
+        Color backgroundColor;
+        Color baseColor;
+        Color focusColor;
+        
         Coordinates coordinates;
 };

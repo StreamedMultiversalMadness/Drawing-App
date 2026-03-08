@@ -3,6 +3,7 @@
 #include"math.h"
 #include"raymath.h"
 #include"GUI.hpp"
+#include <string>
 
 struct MouseOffset
 {
@@ -120,6 +121,8 @@ struct AppContext
 {
     Pensel* pensel;
     ScreenInfo* screenInfo;
+    bool paused = false;
+    bool quit = false;
 };
 
 float GetHypotenuse(float x, float y)
@@ -151,6 +154,8 @@ void ButtonPressedEvents(AppContext* context) // When a button is pressed these 
 
 void ButtonHoldEvents(AppContext* context) // These functions inside fire as long as you hold down a button
 {
+    if(context->paused)return; // [CHANGE] Change this here maybe
+
     if(IsMouseButtonDown(MOUSE_BUTTON_LEFT))
     {
         context->pensel->AddPoint(GetMousePosition());
@@ -177,12 +182,18 @@ void HandleInput(AppContext* context)
     ButtonReleaseEvents(context);
 }
 
+void PauseAction()
+{
+    
+}
+
 
 int main()
 {
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
     InitWindow(1280, 720, "Rita");
-    
+    SetExitKey(0); // Otherwise Esc will be the default
+
     
     Color screenColor = Color{18, 18, 18, 255};
 
@@ -193,7 +204,15 @@ int main()
     // scrre->offset = Vector2Zero();
     // screenInfo->mouseOffset.referencePoint = Vector2{0,0};
 
-    UIElement resume_Button = {UIElementType::Button, UIElementShape::Square, WHITE, Vector2{0.5, 0.5}, Vector2{0.5, 0.1}};
+    UIElement resume_Button = {UIElementProperties::Text, BLACK, Vector2{0.5, 0.5}, Vector2{0.5, 0.1}};
+    resume_Button.textColor = WHITE;
+    resume_Button.text = "Resume";
+    resume_Button.visible = false;
+
+    UIElement quit_Button = {UIElementProperties::Text, BLACK, Vector2{0.5, 0.65}, Vector2{0.5, 0.1}};
+    quit_Button.textColor = WHITE;
+    quit_Button.text = "Quit";
+    quit_Button.visible = false;
 
     Pensel pensel;
     pensel.screenInfo = &screenInfo;
@@ -203,17 +222,25 @@ int main()
     context.screenInfo = &screenInfo;
 
     SetTargetFPS(60);
-    while (!WindowShouldClose())
+    while (!WindowShouldClose() && !context.quit)
     {
         BeginDrawing();
 
             HandleInput(&context);
+            if(IsKeyPressed(KEY_ESCAPE))
+            {
+                context.paused = !context.paused;
+                resume_Button.visible = context.paused;
+                quit_Button.visible = context.paused; 
+            }
+
+            
             
             
             ClearBackground(screenColor);
             
-            UIElement::Loop(GetMousePosition(), GetScreenWidth(), GetScreenHeight());
             pensel.DrawPoints();
+            UIElement::Loop(GetMousePosition(), GetScreenWidth(), GetScreenHeight());
             
         EndDrawing();
     }
