@@ -2,6 +2,7 @@
 #include"iostream"
 #include"math.h"
 #include"raymath.h"
+#include"GUI.hpp"
 
 struct MouseOffset
 {
@@ -58,6 +59,12 @@ class Pensel
         Vector2 points[8000];
         int lastAddedIndex = 0;
         ScreenInfo* screenInfo;
+        Color color;
+
+        Pensel()
+        {
+            color = WHITE;
+        }
 
         void AddPoint(Vector2 point)
         {
@@ -91,7 +98,7 @@ class Pensel
                 if(from == Vector2Zero() || to == Vector2Zero())continue;
                 from = (from - offset) * screenInfo->zoom.value;
                 to = (to - offset) * screenInfo->zoom.value;
-                DrawLineEx(from, to, 2.0f, WHITE);
+                DrawLineEx(from, to, 2.0f, color);
             }
         
         }
@@ -128,13 +135,13 @@ void ButtonPressedEvents(AppContext* context) // When a button is pressed these 
         MouseOffset mOffset = context->screenInfo->mouseOffset;
         context->screenInfo->mouseOffset.referencePoint = GetMousePosition() + mOffset.value; // This is the problem, I don't know what's wrong
     }
-    if(IsKeyPressed(KEY_I))
+    if(GetMouseWheelMove() > 0.0f)
     {
         Zoom zoom = context->screenInfo->zoom;
         context->screenInfo->zoom.value += 0.2f;
         context->screenInfo->zoom.value = Clamp(context->screenInfo->zoom.value, context->screenInfo->zoom.min, context->screenInfo->zoom.max);
     }
-    else if (IsKeyPressed(KEY_O))
+    else if (GetMouseWheelMove() < 0.0f)
     {
         Zoom zoom = context->screenInfo->zoom;
         context->screenInfo->zoom.value -= 0.2f;
@@ -174,7 +181,7 @@ void HandleInput(AppContext* context)
 int main()
 {
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
-    InitWindow(800, 450, "Rita");
+    InitWindow(1280, 720, "Rita");
     
     
     Color screenColor = Color{18, 18, 18, 255};
@@ -186,7 +193,7 @@ int main()
     // scrre->offset = Vector2Zero();
     // screenInfo->mouseOffset.referencePoint = Vector2{0,0};
 
-    
+    UIElement resume_Button = {UIElementType::Button, UIElementShape::Square, WHITE, Vector2{0.5, 0.5}, Vector2{0.5, 0.1}};
 
     Pensel pensel;
     pensel.screenInfo = &screenInfo;
@@ -202,8 +209,10 @@ int main()
 
             HandleInput(&context);
             
+            
             ClearBackground(screenColor);
-
+            
+            UIElement::Loop(GetMousePosition(), GetScreenWidth(), GetScreenHeight());
             pensel.DrawPoints();
             
         EndDrawing();
