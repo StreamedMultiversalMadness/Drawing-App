@@ -11,6 +11,13 @@ void UIElement::SetBackgroundColor(Color bgColor)
     this->backgroundColor = bgColor; // [BUG?] This might cause some bugs
 }
 
+void UIElement::SetTextColor(Color txtColor)
+{
+    this->baseTextColor = txtColor;
+    this->textColor = txtColor; // [BUG?] This might cause some bugs
+}
+
+
 void UIElement::UpdateScreenCoordinates(int screenSizeX, int screenSizeY)
 {
     Vector2 unitPos = this->coordinates.unit.position;
@@ -19,7 +26,7 @@ void UIElement::UpdateScreenCoordinates(int screenSizeX, int screenSizeY)
     // Vector2 offset = Vector2{screenSizeX / 2, screenSizeY / 2};
     
 
-    Vector2 screenPos = Vector2{unitPos.x * screenSizeX * unitSize.x, unitPos.y * screenSizeY * (1-unitSize.y)}; // [Note to self: Remove the offset]
+    Vector2 screenPos = Vector2{unitPos.x * screenSizeX * (1-unitSize.x), unitPos.y * screenSizeY * (1-unitSize.y)}; // [Note to self: Remove the offset]
     Vector2 screenSize = Vector2{unitSize.x * screenSizeX, unitSize.y * screenSizeY};
 
     this->coordinates.screen.position = screenPos;
@@ -50,6 +57,7 @@ UIElement::UIElement(unsigned int properties, Color color, Vector2 position, Vec
     this->baseColor = color;
     this->backgroundColor = color;
     this->focusColor = Color{color.r, color.g, color.b, 50};
+    this->baseTextColor = WHITE;
     this->SetUnitPosition(position);
     this->SetUnitSize(size);
     
@@ -63,12 +71,14 @@ void UIElement::Focus()
 {
     this->isFocus = true;
     this->backgroundColor = this->focusColor;
+    this->textColor = this->focusColor;
 }
 
 void UIElement::UnFocus()
 {
     this->isFocus = true;
     this->backgroundColor = this->baseColor;
+    this->textColor = this->baseTextColor;
 }
 
 void UIElement::Render()
@@ -90,7 +100,10 @@ void UIElement::Render()
     if(text)
     {
         // Text
-        DrawText(this->text.c_str(), pos.x, pos.y, size.y, this->textColor);
+        int fontSize = size.y;
+        const char* text = this->text.c_str();
+        int textWidth = MeasureText(text, fontSize);
+        DrawText(text, 640 - textWidth / 2.0f, pos.y, fontSize, this->textColor);
     }
         
      

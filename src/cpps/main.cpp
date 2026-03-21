@@ -4,18 +4,21 @@
 #include"raymath.h"
 #include"GUI.hpp"
 #include <string>
+#include<AnimationSystem.hpp>
+
+using namespace AnimationSystem;
 
 struct MouseOffset
 {
     Vector2 referencePoint;
-    Vector2 value;
+    AnimatableVector2 value;
 };
 
 struct Zoom
 {
-    float min = 1.0f;
+    float min = 0.5f;
     float max = 2.0f;
-    float value = 1.0f;
+    AnimatableValue value;
 };
 
 class ScreenInfo
@@ -72,14 +75,14 @@ class Pensel
             // Point is usually Mouse Position
             if(point == Vector2Zero())return;
             
-            Vector2 offset = screenInfo->mouseOffset.value;
+            Vector2 offset = screenInfo->mouseOffset.value.Get();
 
             if(lastAddedIndex == arraySize-1)
             {
                 lastAddedIndex = 0;
             }
 
-            point = point / screenInfo->zoom.value; // Zoom scaling
+            point = point / screenInfo->zoom.value.Get(); // Zoom scaling
             points[lastAddedIndex] = (point + offset);
 
             lastAddedIndex++;
@@ -89,7 +92,7 @@ class Pensel
 
         void DrawPoints()
         {
-            Vector2 offset = screenInfo->mouseOffset.value;
+            Vector2 offset = screenInfo->mouseOffset.value.Get();
 
             for(int i = 1; i < arraySize; i++)
             {
@@ -97,8 +100,8 @@ class Pensel
                 Vector2 from = points[i-1];
                 Vector2 to = points[i];
                 if(from == Vector2Zero() || to == Vector2Zero())continue;
-                from = (from - offset) * screenInfo->zoom.value;
-                to = (to - offset) * screenInfo->zoom.value;
+                from = (from - offset) * screenInfo->zoom.value.Get();
+                to = (to - offset) * screenInfo->zoom.value.Get();
                 DrawLineEx(from, to, 2.0f, color);
             }
         
@@ -130,25 +133,38 @@ float GetHypotenuse(float x, float y)
     return sqrt(x*x + y*y);
 }
 
+float lerp(float start, float end, float time)
+{
+    return start * (1- time) + end * time;
+}
+
+Vector2 lerp(Vector2 start, Vector2 end, float time)
+{
+    return start * (1 - time) + end * time;
+}
+
 void ButtonPressedEvents(AppContext* context) // When a button is pressed these function inside only fires once
 {
     if(IsMouseButtonPressed(MOUSE_BUTTON_MIDDLE))
     {
         
         MouseOffset mOffset = context->screenInfo->mouseOffset;
-        context->screenInfo->mouseOffset.referencePoint = GetMousePosition() + mOffset.value; // This is the problem, I don't know what's wrong
+        context->screenInfo->mouseOffset.referencePoint = GetMousePosition() + mOffset.value.Get(); // This is the problem, I don't know what's wrong
     }
-    if(GetMouseWheelMove() > 0.0f)
+    if(GetMouseWheelMove() > 0.0f || GetMouseWheelMove() < 0.0f) // Mouse Scroll
     {
+        
+        float zoomAdd = 0.2f;
+
+        if(GetMouseWheelMove() < 0.0f) // Scroll out (Zoom out)
+        {
+            zoomAdd = -0.2f;
+        }
+
         Zoom zoom = context->screenInfo->zoom;
-        context->screenInfo->zoom.value += 0.2f;
-        context->screenInfo->zoom.value = Clamp(context->screenInfo->zoom.value, context->screenInfo->zoom.min, context->screenInfo->zoom.max);
-    }
-    else if (GetMouseWheelMove() < 0.0f)
-    {
-        Zoom zoom = context->screenInfo->zoom;
-        context->screenInfo->zoom.value -= 0.2f;
-        context->screenInfo->zoom.value = Clamp(context->screenInfo->zoom.value, context->screenInfo->zoom.min, context->screenInfo->zoom.max);
+        float newVal = Clamp(context->screenInfo->zoom.value.Get() + zoomAdd, context->screenInfo->zoom.min, context->screenInfo->zoom.max);
+
+        context->screenInfo->zoom.value.Set(newVal);
     }
 }
 
@@ -162,7 +178,8 @@ void ButtonHoldEvents(AppContext* context) // These functions inside fire as lon
     }
     else if(IsMouseButtonDown(MOUSE_BUTTON_MIDDLE))
     {
-        context->screenInfo->mouseOffset.value = context->screenInfo->mouseOffset.referencePoint - GetMousePosition() ; // Relative to the point you recently pressed middle mouse
+        MouseOffset* mouseOffset = &context->screenInfo->mouseOffset;
+        mouseOffset->value.Set(mouseOffset->referencePoint - GetMousePosition()); // Relative to the point you recently pressed middle mouse
     }
 }
 
@@ -188,6 +205,8 @@ void PauseAction()
 }
 
 
+
+
 int main()
 {
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
@@ -204,12 +223,14 @@ int main()
     // scrre->offset = Vector2Zero();
     // screenInfo->mouseOffset.referencePoint = Vector2{0,0};
 
-    UIElement resume_Button = {UIElementProperties::Text, BLACK, Vector2{0.5, 0.5}, Vector2{0.5, 0.1}};
+    Color buttonColor = Color{50, 50, 50, 255};
+
+    UIElement resume_Button = {UIElementProperties::Text, buttonColor, Vector2{0.5, 0.5}, Vector2{0.3, 0.1}};
     resume_Button.textColor = WHITE;
     resume_Button.text = "Resume";
     resume_Button.visible = false;
 
-    UIElement quit_Button = {UIElementProperties::Text, BLACK, Vector2{0.5, 0.65}, Vector2{0.5, 0.1}};
+    UIElement quit_Button = {UIElementProperties::Text, buttonColor, Vector2{0.5, 0.65}, Vector2{0.3, 0.1}};
     quit_Button.textColor = WHITE;
     quit_Button.text = "Quit";
     quit_Button.visible = false;
@@ -220,6 +241,8 @@ int main()
     AppContext context = {0};
     context.pensel = &pensel;
     context.screenInfo = &screenInfo;
+
+
 
     SetTargetFPS(60);
     while (!WindowShouldClose() && !context.quit)
@@ -241,6 +264,7 @@ int main()
             
             pensel.DrawPoints();
             UIElement::Loop(GetMousePosition(), GetScreenWidth(), GetScreenHeight());
+            AnimationSystem::Process();
             
         EndDrawing();
     }

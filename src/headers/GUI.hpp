@@ -54,6 +54,7 @@ class UIElement
         Coordinates* GetCoordinates();
         Vector2 GetElementScreenSize();
         void SetBackgroundColor(Color bgColor);
+        void SetTextColor(Color txtColor);
         void UpdateScreenCoordinates(int screenSizeX, int screenSizeY);
         void SetUnitPosition(Vector2 pos);
         void SetUnitSize(Vector2 size);
@@ -63,6 +64,7 @@ class UIElement
         Color backgroundColor;
         Color baseColor;
         Color focusColor;
+        Color baseTextColor;
         
         Coordinates coordinates;
 };

@@ -1,2 +1,2 @@
-g++ ../src/cpps/GUI.cpp ../src/cpps/main.cpp  -o program -I../src/headers -I../Dependancies/include/raylib -L../Dependancies/lib/raylib  -lraylib -lopengl32 -lgdi32 -lm -lpthread -lwinmm
+g++ ../src/cpps/AnimationSystem.cpp ../src/cpps/GUI.cpp ../src/cpps/main.cpp  -o program -I../src/headers -I../Dependancies/include/raylib -L../Dependancies/lib/raylib  -lraylib -lopengl32 -lgdi32 -lm -lpthread -lwinmm
 program.exe
