@@ -39,15 +39,10 @@ class ScreenInfo
         {
             float x = GetScreenWidth();
             float y = GetScreenHeight();
-            MouseOffset mOffset;
-            Zoom zm;
 
             size = Vector2{x, y};
             center = Vector2{x/2, y/2};
             ratio = x / y;
-
-            zoom = zm;
-            mouseOffset = mOffset;
         }
 
         void SetBackgroundColor(Color c)
@@ -59,8 +54,8 @@ class ScreenInfo
 class Pensel
 {
     public:
-        int arraySize = 8000;
-        Vector2 points[8000];
+        int arraySize = 80000;
+        Vector2 points[80000];
         int lastAddedIndex = 0;
         ScreenInfo* screenInfo;
         Color color;
@@ -206,7 +201,6 @@ void PauseAction()
 
 
 
-
 int main()
 {
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
@@ -225,15 +219,22 @@ int main()
 
     Color buttonColor = Color{50, 50, 50, 255};
 
-    UIElement resume_Button = {UIElementProperties::Text, buttonColor, Vector2{0.5, 0.5}, Vector2{0.3, 0.1}};
+    Vector2 restUnitPos_resume = Vector2{0.5, 0.4};
+    Vector2 restUnitPos_quit= Vector2{0.5, 0.7};
+
+    UIElement resume_Button = {UIElementProperties::Text | UIElementProperties::Square, buttonColor, restUnitPos_resume, Vector2{0.3, 0.1}};
+    resume_Button.SetPivot(Vector2{0.5, 0.5});
     resume_Button.textColor = WHITE;
     resume_Button.text = "Resume";
     resume_Button.visible = false;
 
-    UIElement quit_Button = {UIElementProperties::Text, buttonColor, Vector2{0.5, 0.65}, Vector2{0.3, 0.1}};
+    UIElement quit_Button = {UIElementProperties::Text | UIElementProperties::Square, buttonColor, restUnitPos_quit, Vector2{0.3, 0.1}};
+    quit_Button.SetPivot(Vector2{0.5, 0.5});
     quit_Button.textColor = WHITE;
     quit_Button.text = "Quit";
     quit_Button.visible = false;
+
+    
 
     Pensel pensel;
     pensel.screenInfo = &screenInfo;
@@ -242,19 +243,26 @@ int main()
     context.pensel = &pensel;
     context.screenInfo = &screenInfo;
 
-
-
     SetTargetFPS(60);
-    while (!WindowShouldClose() && !context.quit)
+    while (!WindowShouldClose() || context.quit)
     {
         BeginDrawing();
 
             HandleInput(&context);
-            if(IsKeyPressed(KEY_ESCAPE))
+            if(IsKeyPressed(KEY_ESCAPE)) // Being executed once per press
             {
                 context.paused = !context.paused;
                 resume_Button.visible = context.paused;
                 quit_Button.visible = context.paused; 
+                if(context.paused)
+                {
+                    resume_Button.SetUnitPosition(Vector2{0.5f, 0.5f});
+                    quit_Button.SetUnitPosition(Vector2{0.5f, 0.65f});
+                }else
+                {
+                    resume_Button.SetUnitPosition(restUnitPos_resume);
+                    quit_Button.SetUnitPosition(restUnitPos_quit);
+                }
             }
 
             

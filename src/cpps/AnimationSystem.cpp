@@ -60,6 +60,10 @@ void AnimatableValue::Interpolate()
 
 AnimatableVector2::AnimatableVector2()
 {
+    std::cout << "AnimatableVector2 Created: " << this << std::endl;
+    
+    goal = Vector2Zero();
+    current = Vector2Zero();
     list_AnimatableVector2.push_front(this);
 }
 
@@ -77,13 +81,12 @@ void AnimatableVector2::Set(Vector2 goal)
 {
     this->goal = goal;
 }
+// The problem, one is used for getting set and another is used for the interpolation [PROBLEM]
 
-void AnimatableVector2::Interpolate()
+void AnimatableVector2::Interpolate() 
 {
     if(Vector2Equals(current, goal)) return; // Animation is finished
     float time = 0.1f; // [W.I.P]
-    
-    // (*value) = startValue * (1.0f - time) + endValue * time; // Sets the value of the thing that should animate
     current = current * (1.0f - time) + goal * time;
 }
 
@@ -99,6 +102,7 @@ void AnimationSystem::Process()
 
     for (AnimatableVector2* v2 : list_AnimatableVector2) // Runs through every interpolation in interpList
     {
+        
         v2->Interpolate();
     }
      

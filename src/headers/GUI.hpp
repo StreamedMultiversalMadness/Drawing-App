@@ -2,25 +2,36 @@
 #include <raylib.h>
 #include <list>
 #include <string>
+#include<AnimationSystem.hpp>
 
+using namespace AnimationSystem;
 
 enum UIElementProperties // These are used as Flags
 {
-    NoBackground = 1,
+    Square = 1,
     Text = 2, 
     Picture = 4,
 };
 
-struct Scales
-{
-    Vector2 position;
-    Vector2 size;
-};
+// struct AnimatableScales
+// {
+//     AnimatableVector2 position;
+//     Vector2 size;
+// };
+
+// struct Scales
+// {
+//     Vector2 position;
+//     Vector2 size;
+// };
 
 struct Coordinates
 {
-    Scales unit;
-    Scales screen;
+    Vector2 unitPos;
+    Vector2 unitSize;
+    
+    AnimatableVector2 screenPos;
+    Vector2 screenSize;
 };
 
 class UIElement 
@@ -51,11 +62,12 @@ class UIElement
         void Render(); // Renders the UI (for the frame you call it on)
         void IsFocus(); 
 
-        Coordinates* GetCoordinates();
+        Coordinates GetCoordinates();
         Vector2 GetElementScreenSize();
+        void SetPivot(Vector2 newPivot);
         void SetBackgroundColor(Color bgColor);
         void SetTextColor(Color txtColor);
-        void UpdateScreenCoordinates(int screenSizeX, int screenSizeY);
+        void UpdateScreenCoordinates(float screenSizeX, float screenSizeY);
         void SetUnitPosition(Vector2 pos);
         void SetUnitSize(Vector2 size);
 
@@ -65,6 +77,15 @@ class UIElement
         Color baseColor;
         Color focusColor;
         Color baseTextColor;
+        Vector2 pivot;
+
+        void UpdateScreenPos(float screenSizeX, float screenSizeY);
+        void UpdateScreenSize(float screenSizeX, float screenSizeY);
         
         Coordinates coordinates;
+};
+
+class SelectionWheel // Will have UIElements in it
+{
+
 };

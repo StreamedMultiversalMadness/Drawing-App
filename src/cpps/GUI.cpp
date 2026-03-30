@@ -1,6 +1,8 @@
 #include<GUI.hpp>
 #include<iostream>
 #include <string>
+#include<raymath.h>
+#include<AnimationSystem.hpp>
 
 
 std::list<UIElement*> elementList; // A list that holds all the elements
@@ -17,37 +19,53 @@ void UIElement::SetTextColor(Color txtColor)
     this->textColor = txtColor; // [BUG?] This might cause some bugs
 }
 
-
-void UIElement::UpdateScreenCoordinates(int screenSizeX, int screenSizeY)
+void UIElement::UpdateScreenPos(float screenSizeX, float screenSizeY)
 {
-    Vector2 unitPos = this->coordinates.unit.position;
-    Vector2 unitSize = this->coordinates.unit.size;
-
-    // Vector2 offset = Vector2{screenSizeX / 2, screenSizeY / 2};
+    Vector2 unitPos = coordinates.unitPos;
+    Vector2 unitSize = coordinates.unitSize;
     
+    Vector2 offset = {pivot.x * screenSizeX, pivot.y * screenSizeY};
+    Vector2 newUnitPos = {unitPos.x - pivot.x * unitSize.x, unitPos.y - pivot.y * unitSize.y};
+    Vector2 screenPos = Vector2{newUnitPos.x * screenSizeX, newUnitPos.y * screenSizeY}; // [EDIT HERE ]
 
-    Vector2 screenPos = Vector2{unitPos.x * screenSizeX * (1-unitSize.x), unitPos.y * screenSizeY * (1-unitSize.y)}; // [Note to self: Remove the offset]
-    Vector2 screenSize = Vector2{unitSize.x * screenSizeX, unitSize.y * screenSizeY};
+    std::cout << " Screen position : (" << coordinates.screenPos.Get().x << ", " << coordinates.screenPos.Get().y << ")" << std::endl;
+    coordinates.screenPos.Set(screenPos);
+}
 
-    this->coordinates.screen.position = screenPos;
-    this->coordinates.screen.size = screenSize; 
+void UIElement::UpdateScreenSize(float screenSizeX, float screenSizeY)
+{
+    Vector2 unitSize = coordinates.unitSize;
+    Vector2 screenSize = Vector2{unitSize.x * screenSizeX, unitSize.y * screenSizeY}; 
+
+    coordinates.screenSize = screenSize; 
+}
+
+void UIElement::UpdateScreenCoordinates(float screenSizeX, float screenSizeY)
+{
+    UpdateScreenPos(screenSizeX, screenSizeY);
+    UpdateScreenSize(screenSizeX, screenSizeY);
 }
 
 void UIElement::SetUnitPosition(Vector2 pos)
 {
-    this->coordinates.unit.position = pos;
-    this->UpdateScreenCoordinates(GetScreenWidth(), GetScreenHeight());
+    coordinates.unitPos = pos;
+    UpdateScreenPos(GetScreenWidth(), GetScreenHeight());
 }
 
 void UIElement::SetUnitSize(Vector2 size)
 {
-    this->coordinates.unit.size = size;
-    this->UpdateScreenCoordinates(GetScreenWidth(), GetScreenHeight());
+    coordinates.unitSize = size;
+    UpdateScreenSize(GetScreenWidth(), GetScreenHeight());
 }
 
-Coordinates* UIElement::GetCoordinates()
+Coordinates UIElement::GetCoordinates()
 {
-    return &this->coordinates;
+    return coordinates;
+}
+
+void UIElement::SetPivot(Vector2 newPivot)
+{
+    pivot = newPivot;
 }
 
 
@@ -58,6 +76,8 @@ UIElement::UIElement(unsigned int properties, Color color, Vector2 position, Vec
     this->backgroundColor = color;
     this->focusColor = Color{color.r, color.g, color.b, 50};
     this->baseTextColor = WHITE;
+    this->pivot = Vector2Zero();
+    
     this->SetUnitPosition(position);
     this->SetUnitSize(size);
     
@@ -83,18 +103,19 @@ void UIElement::UnFocus()
 
 void UIElement::Render()
 {
-    if(!this->visible)return;
-    unsigned int properties = this->properties;
-    bool noBackground = properties & UIElementProperties::NoBackground;
-    bool text = properties & UIElementProperties::Text;
+    if(!this->visible)return; // Will not render if visible is false
 
-    Coordinates* coords = this->GetCoordinates();
-    Vector2 pos = coords->screen.position;
-    Vector2 size = coords->screen.size;
-   
-    if(!noBackground)
+
+    unsigned int props = this->properties;
+    bool square = props & UIElementProperties::Square;
+    bool text = props & UIElementProperties::Text;
+
+    Vector2 pos = coordinates.screenPos.Get();
+    Vector2 size = coordinates.screenSize;
+    
+    if(square)
     {
-        // Square
+       
         DrawRectangle(pos.x, pos.y, size.x, size.y, this->backgroundColor);
     }
     if(text)
@@ -103,7 +124,7 @@ void UIElement::Render()
         int fontSize = size.y;
         const char* text = this->text.c_str();
         int textWidth = MeasureText(text, fontSize);
-        DrawText(text, 640 - textWidth / 2.0f, pos.y, fontSize, this->textColor);
+        DrawText(text, pos.x, pos.y, fontSize, this->textColor);
     }
         
      
@@ -117,10 +138,10 @@ void Hover(UIElement* e, Vector2 cursorPos)
     float cursor_x = cursorPos.x;
     float cursor_y = cursorPos.y;
 
-    Coordinates* coords = e->GetCoordinates();
+    Coordinates coords = e->GetCoordinates();
 
-    Vector2 e_pos = coords->screen.position;
-    Vector2 e_size = coords->screen.size;
+    Vector2 e_pos = coords.screenPos.Get();
+    Vector2 e_size = coords.screenSize;
 
     float posX = e_pos.x;
     float posY = e_pos.y;
