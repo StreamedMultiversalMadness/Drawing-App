@@ -9,7 +9,6 @@ using namespace AnimationSystem;
 using EventSystem::Event;
 
 std::list<AnimatableValue*> list_AnimatableValue;  // A list that holds all the interpolation objects
-std::list<AnimatableVector2*> list_AnimatableVector2;
 
 // Interpolation::Interpolation(Event changeEvent, void(*setter)(float val))
 // {
@@ -58,38 +57,22 @@ void AnimatableValue::Interpolate()
 ////////////////////////////// ANIMATABLE VECTOR2 START HERE ///////////////////////////////
 
 
-AnimatableVector2::AnimatableVector2()
-{
-    std::cout << "AnimatableVector2 Created: " << this << std::endl;
-    
-    goal = Vector2Zero();
-    current = Vector2Zero();
-    list_AnimatableVector2.push_front(this);
-}
-
-AnimatableVector2::~AnimatableVector2() // Not sure if this part is necessary
-{
-    list_AnimatableVector2.remove(this);
-}
-
 Vector2 AnimatableVector2::Get()
 {
-    return this->current;
+    return Vector2{x.Get(), y.Get()};
 }
 
-void AnimatableVector2::Set(Vector2 goal)
+void AnimatableVector2::Set(float x, float y)
 {
-    this->goal = goal;
+    this->x.Set(x);
+    this->y.Set(y);
 }
-// The problem, one is used for getting set and another is used for the interpolation [PROBLEM]
 
-void AnimatableVector2::Interpolate() 
+void AnimatableVector2::Set(Vector2 pos)
 {
-    if(Vector2Equals(current, goal)) return; // Animation is finished
-    float time = 0.1f; // [W.I.P]
-    current = current * (1.0f - time) + goal * time;
+    this->x.Set(pos.x);
+    this->y.Set(pos.y);
 }
-
 
 
 
@@ -98,12 +81,6 @@ void AnimationSystem::Process()
     for (AnimatableValue* v : list_AnimatableValue) // Runs through every interpolation in interpList
     {
         v->Interpolate();
-    }
-
-    for (AnimatableVector2* v2 : list_AnimatableVector2) // Runs through every interpolation in interpList
-    {
-        
-        v2->Interpolate();
     }
      
 }

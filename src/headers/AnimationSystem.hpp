@@ -45,15 +45,12 @@ namespace AnimationSystem // Namespace
     class AnimatableVector2
     {
         private:
-            Vector2 current;
-            Vector2 goal;
-            void Interpolate();
+            AnimatableValue x;
+            AnimatableValue y;
         public:
-            void Set(Vector2 goal);
+            void Set(float x, float y);
+            void Set(Vector2 pos);
             Vector2 Get();
-        
-        AnimatableVector2(); // Constructor
-        ~AnimatableVector2(); // Destructor
 
         friend void Process(); // Friend function
     };
