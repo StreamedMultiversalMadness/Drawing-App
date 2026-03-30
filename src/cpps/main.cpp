@@ -222,25 +222,36 @@ int main()
     Vector2 restUnitPos_resume = Vector2{0.5, 0.4};
     Vector2 restUnitPos_quit= Vector2{0.5, 0.7};
 
-    UIElement resume_Button = {UIElementProperties::Text | UIElementProperties::Square, buttonColor, restUnitPos_resume, Vector2{0.3, 0.1}};
+    UIElement resume_Button = {restUnitPos_resume, UIElementProperties::Text | UIElementProperties::Square};
+    resume_Button.SetUnitSize(Vector2{0.3, 0.1});
+    resume_Button.SetButtonColor(buttonColor);
     resume_Button.SetPivot(Vector2{0.5, 0.5});
     resume_Button.textColor = WHITE;
     resume_Button.text = "Resume";
     resume_Button.visible = false;
 
-    UIElement quit_Button = {UIElementProperties::Text | UIElementProperties::Square, buttonColor, restUnitPos_quit, Vector2{0.3, 0.1}};
+    UIElement quit_Button = {restUnitPos_quit, UIElementProperties::Text | UIElementProperties::Square,};
+    quit_Button.SetUnitSize(Vector2{0.3, 0.1});
+    quit_Button.SetButtonColor(buttonColor);
     quit_Button.SetPivot(Vector2{0.5, 0.5});
     quit_Button.textColor = WHITE;
     quit_Button.text = "Quit";
     quit_Button.visible = false;
 
-    UIElement drawButton = {UIElementProperties::Text | UIElementProperties::Circle, buttonColor, restUnitPos_quit, Vector2{0.1, 0.1}};
-    drawButton.textColor = WHITE;
-    drawButton.text = "Draw";
-    drawButton.visible = false;
+    UIElement drawButton = {restUnitPos_quit, UIElementProperties::Circle};
+    UIElement drawButton2 = {restUnitPos_quit, UIElementProperties::Circle};
+    
+    drawButton.SetUnitSize(0.02f);
+    drawButton2.SetUnitSize(0.02f);
 
+     UIElement drawButton3 = {restUnitPos_quit, UIElementProperties::Circle};
+
+    drawButton3.SetUnitSize(0.02f);
+ 
     SelectionWheel wheel = {0.4f};
     wheel.Add(&drawButton);
+    wheel.Add(&drawButton2);
+    wheel.Add(&drawButton3);
 
     
 
@@ -271,6 +282,15 @@ int main()
                     resume_Button.SetUnitPosition(restUnitPos_resume);
                     quit_Button.SetUnitPosition(restUnitPos_quit);
                 }
+            }
+
+            if(IsMouseButtonPressed(MOUSE_BUTTON_MIDDLE))
+            {
+                wheel.OpenAt(ScreenToUnitCords(GetMousePosition()));
+            }
+            else if(IsMouseButtonReleased(MOUSE_BUTTON_MIDDLE))
+            {
+                wheel.Close();
             }
 
             

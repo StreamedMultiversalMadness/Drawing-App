@@ -5,6 +5,10 @@
 #include<AnimationSystem.hpp>
 
 
+Vector2 ScreenToUnitCords(Vector2 screenCords)
+{
+    return Vector2{screenCords.x / GetScreenWidth(), screenCords.y / GetScreenHeight()};
+}
 
 std::list<UIElement*> UIElement::elementList;
 
@@ -59,6 +63,13 @@ void UIElement::SetUnitSize(Vector2 size)
     UpdateScreenSize(GetScreenWidth(), GetScreenHeight());
 }
 
+void UIElement::SetUnitSize(float radius)
+{
+    Vector2 size = {radius, radius};
+    coordinates.unitSize = size;
+    UpdateScreenSize(GetScreenWidth(), GetScreenHeight());
+}
+
 Coordinates UIElement::GetCoordinates()
 {
     return coordinates;
@@ -69,22 +80,27 @@ void UIElement::SetPivot(Vector2 newPivot)
     pivot = newPivot;
 }
 
-
-UIElement::UIElement(unsigned int properties, Color color, Vector2 position, Vector2 size)
+void UIElement::SetButtonColor(Color color)
 {
-    this->properties = properties;
     this->baseColor = color;
     this->backgroundColor = color;
     this->focusColor = Color{color.r, color.g, color.b, 50};
+}
+
+UIElement::UIElement(Vector2 position, unsigned int properties)
+{
+    SetButtonColor(WHITE);
+    this->properties = properties;
     this->baseTextColor = WHITE;
     this->pivot = Vector2Zero();
     
     this->SetUnitPosition(position);
-    this->SetUnitSize(size);
+    
     
 
     elementList.push_back(this);
 }
+
 
 
 
@@ -150,14 +166,16 @@ void SelectionWheel::Add(UIElement* e)
 
 void SelectionWheel::ShowElement(UIElement* e, bool show) // std::list is passed by reference
 {
-    e->visible = true;
+    e->visible = show;
 }
 
-void SelectionWheel::SetElementPositionByOrder(UIElement* e, Vector2 unitPos, int order) // std::list is passed by reference
+void SelectionWheel::SetElementPositionByOrder(UIElement* e, Vector2 unitPos, int order, float segment) // std::list is passed by reference
 {
+
+    // HAave total size here as well to make somethin relative
     float radius = this->unitRadius;
-    float xPos = cos(order * 20);
-    float yPos = sin(order * 20);
+    float xPos = cos(order * segment) * 0.1f * GetScreenHeight() / GetScreenWidth();
+    float yPos = sin(order * segment) * 0.1f;
 
     Vector2 newPos = {unitPos.x + xPos, unitPos.y + yPos};
     e->SetUnitPosition(newPos);
@@ -168,15 +186,27 @@ void SelectionWheel::OpenAt(Vector2 unitPos)
 {
 
     int size = elements.size();
+    float segment = 2.0f*PI/size ;
 
     for (int i = 0; i < size; i++)
     {
         UIElement* e = elements[i];
         ShowElement(e, true);
-        SetElementPositionByOrder(e, unitPos, i);
+        SetElementPositionByOrder(e, unitPos, i, segment);
     }
     
 
+}
+
+void SelectionWheel::Close()
+{
+    int size = elements.size();
+    
+    for (int i = 0; i < size; i++)
+    {
+        UIElement* e = elements[i];
+        ShowElement(e, false);
+    }
 }
 
 void Hover(UIElement* e, Vector2 cursorPos)
@@ -198,11 +228,24 @@ void Hover(UIElement* e, Vector2 cursorPos)
 
     bool hover = false;
 
+    bool square = e->properties & UIElementProperties::Square;
+    bool circle = e->properties & UIElementProperties::Circle;
     
-    // Square
-    bool xVacinity = cursor_x < endX && cursor_x > posX;
-    bool yVacinity = cursor_y < endY && cursor_y > posY;
-    if(xVacinity && yVacinity) hover = true; // Cursor is inside
+    if(square)
+    {
+        // Square
+        bool xVacinity = cursor_x < endX && cursor_x > posX;
+        bool yVacinity = cursor_y < endY && cursor_y > posY;
+        if(xVacinity && yVacinity) hover = true; // Cursor is inside
+    }
+    else if(circle)
+    {
+        Vector2 dif = cursorPos - e_pos;
+        float magnitude = Vector2Length(dif);
+        bool inRange = magnitude < e_size.x; // size.x is radius in this case
+        hover = inRange;
+    }
+   
       
 
     

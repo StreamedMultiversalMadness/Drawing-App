@@ -27,6 +27,8 @@ enum UIElementProperties // These are used as Flags
 //     Vector2 size;
 // };
 
+Vector2 ScreenToUnitCords(Vector2 screenCords); // Convert screen coordinates to unit coordinates
+
 struct Coordinates
 {
     Vector2 unitPos;
@@ -56,7 +58,7 @@ class UIElement
 
         bool visible = true;
 
-        UIElement(unsigned int properties, Color color, Vector2 position, Vector2 size);
+        UIElement(Vector2 position, unsigned int properties);
         // ~UIElement(); // Will be presnent if I implement runtime instantiations
 
         void Push(); // When you press the ui
@@ -65,14 +67,18 @@ class UIElement
         void Render(); // Renders the UI (for the frame you call it on)
         void IsFocus(); 
 
+        
+
         Coordinates GetCoordinates();
         Vector2 GetElementScreenSize();
         void SetPivot(Vector2 newPivot);
+        void SetButtonColor(Color color);
         void SetBackgroundColor(Color bgColor);
         void SetTextColor(Color txtColor);
         void UpdateScreenCoordinates(float screenSizeX, float screenSizeY);
         void SetUnitPosition(Vector2 pos);
         void SetUnitSize(Vector2 size);
+        void SetUnitSize(float radius);
 
     private:
         bool isFocus;
@@ -95,7 +101,7 @@ class SelectionWheel // Will have UIElements in it
         float elementScaling; // Percentage of scaling for elements if for example the UIElements all need to be scaled down.
         std::vector<UIElement*> elements; 
         static void ShowElement(UIElement* e, bool show);
-        void SetElementPositionByOrder(UIElement* e, Vector2 unitPos, int order);
+        void SetElementPositionByOrder(UIElement* e, Vector2 unitPos, int order, float segment);
 
     public:
         void OpenAt(Vector2 pos); // Sets the position of each UIElement and makes them visible.
