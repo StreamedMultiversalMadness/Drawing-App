@@ -234,6 +234,14 @@ int main()
     quit_Button.text = "Quit";
     quit_Button.visible = false;
 
+    UIElement drawButton = {UIElementProperties::Text | UIElementProperties::Circle, buttonColor, restUnitPos_quit, Vector2{0.1, 0.1}};
+    drawButton.textColor = WHITE;
+    drawButton.text = "Draw";
+    drawButton.visible = false;
+
+    SelectionWheel wheel = {0.4f};
+    wheel.Add(&drawButton);
+
     
 
     Pensel pensel;

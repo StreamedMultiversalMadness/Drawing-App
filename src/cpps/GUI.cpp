@@ -5,7 +5,8 @@
 #include<AnimationSystem.hpp>
 
 
-std::list<UIElement*> elementList; // A list that holds all the elements
+
+std::list<UIElement*> UIElement::elementList;
 
 void UIElement::SetBackgroundColor(Color bgColor)
 {
@@ -109,6 +110,7 @@ void UIElement::Render()
     unsigned int props = this->properties;
     bool square = props & UIElementProperties::Square;
     bool text = props & UIElementProperties::Text;
+    bool circle = props & UIElementProperties::Circle;
 
     Vector2 pos = coordinates.screenPos.Get();
     Vector2 size = coordinates.screenSize;
@@ -117,6 +119,10 @@ void UIElement::Render()
     {
        
         DrawRectangle(pos.x, pos.y, size.x, size.y, this->backgroundColor);
+    }
+    else if(circle)
+    {
+        DrawCircle(pos.x, pos.y, size.x, this->backgroundColor);
     }
     if(text)
     {
@@ -131,7 +137,47 @@ void UIElement::Render()
     
 }
 
+SelectionWheel::SelectionWheel(float unitRadius)
+{
+    this->unitRadius = unitRadius;
+    this->elementScaling = 1.0f;
+}
 
+void SelectionWheel::Add(UIElement* e)
+{
+    elements.push_back(e);
+}
+
+void SelectionWheel::ShowElement(UIElement* e, bool show) // std::list is passed by reference
+{
+    e->visible = true;
+}
+
+void SelectionWheel::SetElementPositionByOrder(UIElement* e, Vector2 unitPos, int order) // std::list is passed by reference
+{
+    float radius = this->unitRadius;
+    float xPos = cos(order * 20);
+    float yPos = sin(order * 20);
+
+    Vector2 newPos = {unitPos.x + xPos, unitPos.y + yPos};
+    e->SetUnitPosition(newPos);
+}
+
+
+void SelectionWheel::OpenAt(Vector2 unitPos)
+{
+
+    int size = elements.size();
+
+    for (int i = 0; i < size; i++)
+    {
+        UIElement* e = elements[i];
+        ShowElement(e, true);
+        SetElementPositionByOrder(e, unitPos, i);
+    }
+    
+
+}
 
 void Hover(UIElement* e, Vector2 cursorPos)
 {

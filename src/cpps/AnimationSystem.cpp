@@ -8,6 +8,7 @@
 using namespace AnimationSystem;
 using EventSystem::Event;
 
+
 std::list<AnimatableValue*> list_AnimatableValue;  // A list that holds all the interpolation objects
 
 // Interpolation::Interpolation(Event changeEvent, void(*setter)(float val))
@@ -19,8 +20,8 @@ std::list<AnimatableValue*> list_AnimatableValue;  // A list that holds all the 
 // {
 //     
 
-    
 // }
+
 
 AnimatableValue::AnimatableValue()
 {

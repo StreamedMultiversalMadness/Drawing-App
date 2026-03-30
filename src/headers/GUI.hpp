@@ -1,6 +1,7 @@
 #pragma once
 #include <raylib.h>
 #include <list>
+#include<vector>
 #include <string>
 #include<AnimationSystem.hpp>
 
@@ -10,7 +11,8 @@ enum UIElementProperties // These are used as Flags
 {
     Square = 1,
     Text = 2, 
-    Picture = 4,
+    Circle = 4,
+    Picture = 8,
 };
 
 // struct AnimatableScales
@@ -39,6 +41,7 @@ class UIElement
     
 
     public:
+        static std::list<UIElement*> elementList; // A list that holds all the elements
         static void Loop(Vector2 cursorPos, int screenSizeX, int screenSizeY);// Checks if the cursor is over the region of a ui
     
         
@@ -87,5 +90,20 @@ class UIElement
 
 class SelectionWheel // Will have UIElements in it
 {
+    private:
+        float unitRadius; // Percentage of which the radius occupies the screen.
+        float elementScaling; // Percentage of scaling for elements if for example the UIElements all need to be scaled down.
+        std::vector<UIElement*> elements; 
+        static void ShowElement(UIElement* e, bool show);
+        void SetElementPositionByOrder(UIElement* e, Vector2 unitPos, int order);
+
+    public:
+        void OpenAt(Vector2 pos); // Sets the position of each UIElement and makes them visible.
+        void Close(); // The reverse process of Open bascially.
+        
+        void Add(UIElement* e); // Adds a UI elemnt to the elements list.
+        void Remove(UIElement& e); // Removes a UI element from the elements list.
+
+        SelectionWheel(float unitRadius); // Constructor
 
 };
