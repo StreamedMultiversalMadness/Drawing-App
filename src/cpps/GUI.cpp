@@ -162,7 +162,9 @@ void UIElement::Render()
     }
     if(image)
     {
-        DrawTextureEx(this->texture, pos, 0.0f, 0.5f, WHITE);
+        float scale = 0.2f; // [Need to be changed]
+        Vector2 offset = {128 * scale, 128 * scale};
+        DrawTextureEx(this->texture, pos - offset, 0.0f, scale, WHITE);
     }
         
      
