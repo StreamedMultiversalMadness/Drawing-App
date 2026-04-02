@@ -56,6 +56,7 @@ class UIElement
 
         std::string text;
         Color textColor;
+        float imageScale;
 
         bool visible = true;
 
@@ -90,6 +91,7 @@ class UIElement
         Color baseTextColor;
         Vector2 pivot;
         Texture2D texture;
+        Color imageTint;
 
         void UpdateScreenPos(float screenSizeX, float screenSizeY);
         void UpdateScreenSize(float screenSizeX, float screenSizeY);

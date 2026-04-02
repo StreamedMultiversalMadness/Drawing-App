@@ -98,6 +98,7 @@ UIElement::UIElement(Vector2 position, unsigned int properties)
     this->properties = properties;
     this->baseTextColor = WHITE;
     this->pivot = Vector2Zero();
+    this->imageScale = 1.0f;
     
     this->SetUnitPosition(position);
     elementList.push_back(this);
@@ -120,6 +121,7 @@ void UIElement::Focus()
     this->isFocus = true;
     this->backgroundColor = this->focusColor;
     this->textColor = this->focusColor;
+    this->imageTint = this->focusColor;
 }
 
 void UIElement::UnFocus()
@@ -127,6 +129,7 @@ void UIElement::UnFocus()
     this->isFocus = true;
     this->backgroundColor = this->baseColor;
     this->textColor = this->baseTextColor;
+    this->imageTint = WHITE;
 }
 
 void UIElement::Render()
@@ -162,9 +165,9 @@ void UIElement::Render()
     }
     if(image)
     {
-        float scale = 0.2f; // [Need to be changed]
-        Vector2 offset = {128 * scale, 128 * scale};
-        DrawTextureEx(this->texture, pos - offset, 0.0f, scale, WHITE);
+         // [Need to be changed]
+        Vector2 offset = {128 * this->imageScale, 128 * this->imageScale};
+        DrawTextureEx(this->texture, pos - offset, 0.0f, this->imageScale, this->imageTint);
     }
         
      
