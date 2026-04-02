@@ -87,6 +87,11 @@ void UIElement::SetButtonColor(Color color)
     this->focusColor = Color{color.r, color.g, color.b, 50};
 }
 
+void UIElement::SetImageTexture(std::string path)
+{
+    this->texture = LoadTexture(path.c_str());
+}
+
 UIElement::UIElement(Vector2 position, unsigned int properties)
 {
     SetButtonColor(WHITE);
@@ -95,12 +100,18 @@ UIElement::UIElement(Vector2 position, unsigned int properties)
     this->pivot = Vector2Zero();
     
     this->SetUnitPosition(position);
-    
-    
-
     elementList.push_back(this);
 }
 
+
+UIElement::~UIElement()
+{
+    bool image = properties & UIElementProperties::ImageLabel;
+    if(image)
+    {
+        UnloadTexture(this->texture);
+    }
+}
 
 
 
@@ -127,6 +138,7 @@ void UIElement::Render()
     bool square = props & UIElementProperties::Square;
     bool text = props & UIElementProperties::Text;
     bool circle = props & UIElementProperties::Circle;
+    bool image = props & UIElementProperties::ImageLabel;
 
     Vector2 pos = coordinates.screenPos.Get();
     Vector2 size = coordinates.screenSize;
@@ -148,6 +160,10 @@ void UIElement::Render()
         int textWidth = MeasureText(text, fontSize);
         DrawText(text, pos.x, pos.y, fontSize, this->textColor);
     }
+    if(image)
+    {
+        DrawTextureEx(this->texture, pos, 0.0f, 0.5f, WHITE);
+    }
         
      
     
@@ -168,6 +184,7 @@ void SelectionWheel::ShowElement(UIElement* e, bool show) // std::list is passed
 {
     e->visible = show;
 }
+
 
 void SelectionWheel::SetElementPositionByOrder(UIElement* e, Vector2 unitPos, int order, float segment) // std::list is passed by reference
 {

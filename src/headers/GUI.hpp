@@ -13,6 +13,7 @@ enum UIElementProperties // These are used as Flags
     Text = 2, 
     Circle = 4,
     Picture = 8,
+    ImageLabel = 16,
 };
 
 // struct AnimatableScales
@@ -59,7 +60,7 @@ class UIElement
         bool visible = true;
 
         UIElement(Vector2 position, unsigned int properties);
-        // ~UIElement(); // Will be presnent if I implement runtime instantiations
+        ~UIElement(); 
 
         void Push(); // When you press the ui
         void Focus(); // For when the cursor is on the ui element (The reason for name focus is if you use a gamepad and don't have cursor)
@@ -79,6 +80,7 @@ class UIElement
         void SetUnitPosition(Vector2 pos);
         void SetUnitSize(Vector2 size);
         void SetUnitSize(float radius);
+        void SetImageTexture(std::string path);
 
     private:
         bool isFocus;
@@ -87,6 +89,7 @@ class UIElement
         Color focusColor;
         Color baseTextColor;
         Vector2 pivot;
+        Texture2D texture;
 
         void UpdateScreenPos(float screenSizeX, float screenSizeY);
         void UpdateScreenSize(float screenSizeX, float screenSizeY);

@@ -238,14 +238,20 @@ int main()
     quit_Button.text = "Quit";
     quit_Button.visible = false;
 
-    UIElement drawButton = {restUnitPos_quit, UIElementProperties::Circle};
-    UIElement drawButton2 = {restUnitPos_quit, UIElementProperties::Circle};
-    
+    UIElement drawButton = {restUnitPos_quit, UIElementProperties::Circle | UIElementProperties::ImageLabel};
+    drawButton.SetImageTexture("../images/selectionwheel/erase.png");
+    drawButton.SetButtonColor(buttonColor);
     drawButton.SetUnitSize(0.02f);
+
+    UIElement drawButton2 = {restUnitPos_quit, UIElementProperties::Circle | UIElementProperties::ImageLabel};
+    drawButton2.SetImageTexture("../images/selectionwheel/lasso.png");
+    drawButton2.SetButtonColor(buttonColor);
     drawButton2.SetUnitSize(0.02f);
+ 
 
-     UIElement drawButton3 = {restUnitPos_quit, UIElementProperties::Circle};
-
+    UIElement drawButton3 = {restUnitPos_quit, UIElementProperties::Circle | UIElementProperties::ImageLabel};
+    drawButton3.SetImageTexture("../images/selectionwheel/pen.png");
+    drawButton3.SetButtonColor(buttonColor);
     drawButton3.SetUnitSize(0.02f);
  
     SelectionWheel wheel = {0.4f};
