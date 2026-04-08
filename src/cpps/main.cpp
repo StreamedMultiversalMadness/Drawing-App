@@ -170,6 +170,7 @@ int main()
     
 
     Eraser eraser; 
+    eraser.screenInfo = &screenInfo;
 
     
 

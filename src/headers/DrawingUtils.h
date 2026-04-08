@@ -33,6 +33,7 @@ class Eraser
 
     public:
         bool enabled = false;
+        ScreenInfo* screenInfo;
 
         void Erase(Pensel* p);
         void Render();

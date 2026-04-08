@@ -58,12 +58,13 @@ void Pensel::AddPoint(Vector2 point)
 void Eraser::Erase(Pensel* p)
 {
     if(!this->enabled)return;
-    Vector2 pos = p->screenInfo->GetDrawSpacePosition(this->position);
+    Vector2 pos = this->screenInfo->GetDrawSpacePosition(this->position);
+    float scaledRadius = this->radius;
     for(int i = 0; i < p->arraySize; i++)
     {
         Vector2 point = p->points[i];
         float distance = Vector2Distance(pos, point);
-        if(distance < this->radius)
+        if(distance < scaledRadius)
         {
             // Erase
             p->points[i] = Vector2Zero();
@@ -79,5 +80,5 @@ void Eraser::SetPosition(Vector2 mousePos)
 void Eraser::Render()
 {
     if(!this->enabled)return;
-    DrawCircleLinesV(this->position, this->radius, WHITE);
+    DrawCircleLinesV(this->position, this->radius * this->screenInfo->zoom.value.Get(), WHITE);
 }
