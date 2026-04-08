@@ -4,120 +4,21 @@
 #include"raymath.h"
 #include"GUI.hpp"
 #include <string>
-#include<AnimationSystem.hpp>
+#include"AnimationSystem.hpp"
+#include"Screen.h"
+#include"DrawingUtils.h"
 
 using namespace AnimationSystem;
-
-struct MouseOffset
-{
-    Vector2 referencePoint;
-    AnimatableVector2 value;
-};
-
-struct Zoom
-{
-    float min = 0.5f;
-    float max = 2.0f;
-    AnimatableValue value;
-};
-
-class ScreenInfo
-{
-    private:
-        Color color;
-
-    public:
-        Vector2 size;
-        Vector2 center;
-        Vector2 centeroffset;
-        float ratio;
-        
-        Zoom zoom;
-        MouseOffset mouseOffset;
-
-        ScreenInfo()
-        {
-            float x = GetScreenWidth();
-            float y = GetScreenHeight();
-
-            size = Vector2{x, y};
-            center = Vector2{x/2, y/2};
-            ratio = x / y;
-        }
-
-        void SetBackgroundColor(Color c)
-        {
-            color = c;
-        }
-};
-
-class Pensel
-{
-    public:
-        int arraySize = 80000;
-        Vector2 points[80000];
-        int lastAddedIndex = 0;
-        ScreenInfo* screenInfo;
-        Color color;
-
-        Pensel()
-        {
-            color = WHITE;
-        }
-
-        void AddPoint(Vector2 point)
-        {
-            // Point is usually Mouse Position
-            if(point == Vector2Zero())return;
-            
-            Vector2 offset = screenInfo->mouseOffset.value.Get();
-
-            if(lastAddedIndex == arraySize-1)
-            {
-                lastAddedIndex = 0;
-            }
-
-            point = point / screenInfo->zoom.value.Get(); // Zoom scaling
-            points[lastAddedIndex] = (point + offset);
-
-            lastAddedIndex++;
-        }
+using namespace Screen;
 
 
 
-        void DrawPoints()
-        {
-            Vector2 offset = screenInfo->mouseOffset.value.Get();
 
-            for(int i = 1; i < arraySize; i++)
-            {
-
-                Vector2 from = points[i-1];
-                Vector2 to = points[i];
-                if(from == Vector2Zero() || to == Vector2Zero())continue;
-                from = (from - offset) * screenInfo->zoom.value.Get();
-                to = (to - offset) * screenInfo->zoom.value.Get();
-                DrawLineEx(from, to, 2.0f, color);
-            }
-        
-        }
-
-        void CreateBreak()
-        {
-            if(lastAddedIndex == arraySize-1)
-            {
-                lastAddedIndex = 0; // Reset of you've drawn too much, This will change to add more slots instead
-            }
-
-            points[lastAddedIndex] = Vector2Zero();
-
-            lastAddedIndex++;
-        }
-};
 
 struct AppContext
 {
     Pensel* pensel;
+    Eraser* eraser;
     ScreenInfo* screenInfo;
     bool paused = false;
     bool quit = false;
@@ -170,6 +71,7 @@ void ButtonHoldEvents(AppContext* context) // These functions inside fire as lon
     if(IsMouseButtonDown(MOUSE_BUTTON_LEFT))
     {
         context->pensel->AddPoint(GetMousePosition());
+        context->eraser->Erase(context->pensel);
     }
     else if(IsMouseButtonDown(MOUSE_BUTTON_MIDDLE))
     {
@@ -262,19 +164,26 @@ int main()
     wheel.Add(&drawButton2);
     wheel.Add(&drawButton3);
 
-    
 
     Pensel pensel;
     pensel.screenInfo = &screenInfo;
+    
+
+    Eraser eraser; 
+
+    
 
     AppContext context = {0};
     context.pensel = &pensel;
+    context.eraser = &eraser;
     context.screenInfo = &screenInfo;
 
     SetTargetFPS(60);
     while (!WindowShouldClose() || context.quit)
     {
         BeginDrawing();
+
+            Vector2 mousePos = GetMousePosition();
 
             HandleInput(&context);
             if(IsKeyPressed(KEY_ESCAPE)) // Being executed once per press
@@ -293,16 +202,19 @@ int main()
                 }
             }
 
-            if(IsMouseButtonPressed(MOUSE_BUTTON_MIDDLE))
+            if(IsKeyPressed(KEY_SPACE))
             {
-                wheel.OpenAt(ScreenToUnitCords(GetMousePosition()));
+                wheel.OpenAt(ScreenToUnitCords(mousePos));
+                pensel.enabled = !pensel.enabled;
+                eraser.enabled = !eraser.enabled;  
             }
-            else if(IsMouseButtonReleased(MOUSE_BUTTON_MIDDLE))
+            else if(IsKeyReleased(KEY_SPACE))
             {
                 wheel.Close();
             }
 
-            
+            eraser.SetPosition(mousePos);
+            eraser.Render();
             
             
             ClearBackground(screenColor);
