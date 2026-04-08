@@ -67,7 +67,7 @@ class UIElement
         void Focus(); // For when the cursor is on the ui element (The reason for name focus is if you use a gamepad and don't have cursor)
         void UnFocus(); // When the mouse leaves the area of the ui
         void Render(); // Renders the UI (for the frame you call it on)
-        void IsFocus(); 
+        bool IsFocus(); 
 
         
 
@@ -84,7 +84,7 @@ class UIElement
         void SetImageTexture(std::string path);
 
     private:
-        bool isFocus;
+        bool inFocus;
         Color backgroundColor;
         Color baseColor;
         Color focusColor;

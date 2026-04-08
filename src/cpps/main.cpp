@@ -206,12 +206,24 @@ int main()
             if(IsKeyPressed(KEY_SPACE))
             {
                 wheel.OpenAt(ScreenToUnitCords(mousePos));
-                pensel.enabled = !pensel.enabled;
-                eraser.enabled = !eraser.enabled;  
             }
             else if(IsKeyReleased(KEY_SPACE))
             {
                 wheel.Close();
+                bool focusErase = drawButton.IsFocus();
+                bool focusPensel = drawButton3.IsFocus();
+                std::cout << focusErase << std::endl;
+                std::cout << focusPensel << std::endl;
+                if(focusErase)
+                {
+                    pensel.enabled = false;
+                    eraser.enabled = true;
+                }
+                else if(focusPensel)
+                {
+                    pensel.enabled = true;
+                    eraser.enabled = false;
+                }
             }
 
             eraser.SetPosition(mousePos);

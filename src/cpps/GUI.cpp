@@ -118,7 +118,7 @@ UIElement::~UIElement()
 
 void UIElement::Focus()
 {
-    this->isFocus = true;
+    this->inFocus = true;
     this->backgroundColor = this->focusColor;
     this->textColor = this->focusColor;
     this->imageTint = this->focusColor;
@@ -126,11 +126,16 @@ void UIElement::Focus()
 
 void UIElement::UnFocus()
 {
-    this->isFocus = true;
+    this->inFocus = false;
     this->backgroundColor = this->baseColor;
     this->textColor = this->baseTextColor;
     this->imageTint = WHITE;
 }
+
+bool UIElement::IsFocus()
+{
+    return this->inFocus;
+} 
 
 void UIElement::Render()
 {
