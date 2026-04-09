@@ -39,3 +39,19 @@ class Eraser
         void Render();
         void SetPosition(Vector2 mousePos);
 };
+
+class Lasso
+{
+    private:
+        int length;
+        Vector2 pointArray[1000];
+    public:
+        bool enabled = false;
+        Vector2 GetPoint(int index);
+        int GetMaxArraySize();
+        void AddPoint(Vector2 point); // Adds a point at a certain index
+        int GetLength(); // Returns the value of length (how many points that are placed)
+        void LetGo();
+
+        void Render();
+};

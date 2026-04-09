@@ -19,6 +19,7 @@ struct AppContext
 {
     Pensel* pensel;
     Eraser* eraser;
+    Lasso* lasso;
     ScreenInfo* screenInfo;
     bool paused = false;
     bool quit = false;
@@ -68,15 +69,19 @@ void ButtonHoldEvents(AppContext* context) // These functions inside fire as lon
 {
     if(context->paused)return; // [CHANGE] Change this here maybe
 
+    Vector2 mousePos = GetMousePosition();
+
     if(IsMouseButtonDown(MOUSE_BUTTON_LEFT))
     {
-        context->pensel->AddPoint(GetMousePosition());
+        
+        context->pensel->AddPoint(mousePos);
         context->eraser->Erase(context->pensel);
+        context->lasso->AddPoint(mousePos);
     }
     else if(IsMouseButtonDown(MOUSE_BUTTON_MIDDLE))
     {
         MouseOffset* mouseOffset = &context->screenInfo->mouseOffset;
-        mouseOffset->value.Set(mouseOffset->referencePoint - GetMousePosition()); // Relative to the point you recently pressed middle mouse
+        mouseOffset->value.Set(mouseOffset->referencePoint - mousePos); // Relative to the point you recently pressed middle mouse
     }
 }
 
@@ -172,11 +177,14 @@ int main()
     Eraser eraser; 
     eraser.screenInfo = &screenInfo;
 
+    Lasso lasso; 
+
     
 
     AppContext context = {0};
     context.pensel = &pensel;
     context.eraser = &eraser;
+    context.lasso = &lasso;
     context.screenInfo = &screenInfo;
 
     SetTargetFPS(60);
@@ -211,17 +219,26 @@ int main()
             {
                 wheel.Close();
                 bool focusErase = drawButton.IsFocus();
+                bool focusLasso = drawButton2.IsFocus();
                 bool focusPensel = drawButton3.IsFocus();
-                std::cout << focusErase << std::endl;
-                std::cout << focusPensel << std::endl;
+ 
                 if(focusErase)
                 {
                     pensel.enabled = false;
                     eraser.enabled = true;
+                    lasso.enabled = false;
                 }
                 else if(focusPensel)
                 {
                     pensel.enabled = true;
+                    eraser.enabled = false;
+                    lasso.enabled = false;
+                }
+
+                else if(focusLasso)
+                {
+                    pensel.enabled = false;
+                    lasso.enabled = true;
                     eraser.enabled = false;
                 }
             }
@@ -233,6 +250,7 @@ int main()
             ClearBackground(screenColor);
             
             pensel.DrawPoints();
+            lasso.Render();
             UIElement::Loop(GetMousePosition(), GetScreenWidth(), GetScreenHeight());
             AnimationSystem::Process();
             

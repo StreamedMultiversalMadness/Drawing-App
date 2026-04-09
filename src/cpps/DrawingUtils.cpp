@@ -82,3 +82,102 @@ void Eraser::Render()
     if(!this->enabled)return;
     DrawCircleLinesV(this->position, this->radius * this->screenInfo->zoom.value.Get(), WHITE);
 }
+
+int Lasso::GetLength()
+{
+    return this->length;
+}
+
+int Lasso::GetMaxArraySize()
+{
+    return sizeof(this->pointArray) / sizeof(Vector2);
+}
+
+void Lasso::AddPoint(Vector2 point)
+{
+    if(!this->enabled)return;
+    // [TO DO]If length from the point before to the current point is above some threshold then we draw instead ()
+
+    
+
+    int maxSize = this->GetMaxArraySize();
+    int len = this->length;
+    if(len == maxSize)return; // Too big
+
+    if(len == 0)
+    {
+        pointArray[len] = point;    
+    }
+
+    
+
+    
+    length++;
+}
+
+void Lasso::LetGo()
+{
+    // Let go
+}
+
+Vector2 Lasso::GetPoint(int index)
+{
+    int maxSize = this->GetMaxArraySize();
+    if(index >= maxSize)return Vector2Zero(); // Index out of bounds
+
+    return this->pointArray[index];
+}
+
+void DrawLineDotted(Vector2 from, Vector2 to, Color color) // Not Wokring
+{
+    Vector2 dir = to-from;
+    Vector2 nDir = Vector2Normalize(dir);
+    float vLen = Vector2Length(dir);
+    
+    // First line segement
+    Vector2 f = from;
+    Vector2 t = from + nDir * vLen/8;
+    DrawLineV(f, t, color);
+
+    // Second line segment
+    f = from + nDir * vLen/4;
+    t = from + nDir * vLen/2;
+    DrawLineV(f, t, color);
+
+    // Third line segment
+    f = to - nDir * vLen/8;
+    t = to;
+    DrawLineV(f, t, color);
+}
+
+float prevT = 0;
+void Lasso::Render()
+{
+    if(!this->enabled)return;
+
+    // int maxSize = this->GetMaxArraySize();
+    int len = this->length;
+
+    float travelDistance = 0.0f;
+    bool theSwitch = false;
+
+    for(int i = 0; i < len; i++)
+    {
+        int nextIndex = (i+1)%len; // Wraps around if len == maxSize
+
+        Vector2 from = this->pointArray[i];
+        Vector2 to = this->pointArray[nextIndex];
+        float dis = Vector2Length(to - from);
+
+        
+        travelDistance += dis;
+        if(travelDistance > 5.0f)
+        {
+            travelDistance = 0;
+            theSwitch = !theSwitch;
+        }
+
+        if(theSwitch)continue;
+        DrawLineV(from, to, WHITE);
+    }
+}
